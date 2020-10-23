@@ -1,0 +1,39 @@
+name: D365DeveloperExtensions.CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+    
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # Requires Windows due to .Net Framework Dependency
+    runs-on: windows-latest   
+    
+    steps:
+    #- name: Install 2017 Build Tools
+    #  run: choco install visualstudio2017buildtools --version 15.9.25.0 -y
+     
+    # Configure MSBuild ...
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.1
+      #with:
+      #  vs-version: '15.9.25.0' # '[15.0,15.8)'
+
+    # Setup DotNet Core
+    - uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '3.1.x' # SDK Version to use; x will use the latest version of the 3.1 channel
+  
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v2
+    
+    # Restore ...
+    - name: Restore packages
+      run: nuget restore ./D365DeveloperExtensions.sln
+
+    # Build
+    - name: Build with MSBuild
+      run: msbuild ./D365DeveloperExtensions.sln -p:Configuration=Release
